@@ -38,22 +38,22 @@ jobs:
 
       - name: Create Artifact Registry repository
         run: |
-          gcloud artifacts repositories create ${{ env.SERVICE_NAME }} \
+          gcloud artifacts repositories create my-newsletter \
             --repository-format=docker \
             --location=${{ env.REGION }} \
             --quiet || true
 
       - name: Build and Push Container
         run: |-
-          docker build -t ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }} process_emails/
-          docker push ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }}
+          docker build -t ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/my-newsletter/${{ env.SERVICE_NAME }}:${{ github.sha }} process_emails/
+          docker push ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/my-newsletter/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
-          image: ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }}
+          image: ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/my-newsletter/${{ env.SERVICE_NAME }}:${{ github.sha }}
           env_vars: |
             USER_EMAIL=${{ secrets.USER_EMAIL }}
             LABEL_NAME=${{ secrets.LABEL_NAME }}
