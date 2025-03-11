@@ -36,13 +36,6 @@ jobs:
       - name: Authorize Docker push
         run: gcloud auth configure-docker ${{ env.REGISTRY }}
 
-      - name: Create Artifact Registry repository
-        run: |
-          gcloud artifacts repositories create my-newsletter \
-            --repository-format=docker \
-            --location=${{ env.REGION }} \
-            --quiet || true
-
       - name: Build and Push Container
         run: |-
           docker build -t ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/my-newsletter/${{ env.SERVICE_NAME }}:${{ github.sha }} process_emails/
@@ -54,6 +47,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/my-newsletter/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          service-account: ${{ secrets.PROJECT_NUMBER }}-compute@developer.gserviceaccount.com
           env_vars: |
             USER_EMAIL=${{ secrets.USER_EMAIL }}
             LABEL_NAME=${{ secrets.LABEL_NAME }}
