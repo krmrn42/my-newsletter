@@ -7,8 +7,8 @@ on:
 
 env:
   REGION: us-west1  # Replace with your desired region
-  GCR_REGION: us.gcr.io  # GCR regional endpoint
   SERVICE_NAME: process-emails  # Replace with your desired service name
+  REGISTRY: us-west1-docker.pkg.dev  # Artifact Registry location
 
 jobs:
   deploy:
@@ -27,26 +27,33 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}  # Workload Identity Federation provider
-          service_account: ${{ secrets.SERVICE_ACCOUNT }}  # Service account email
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Authorize Docker push
-        run: gcloud auth configure-docker ${{ env.GCR_REGION }}
+        run: gcloud auth configure-docker ${{ env.REGISTRY }}
+
+      - name: Create Artifact Registry repository
+        run: |
+          gcloud artifacts repositories create ${{ env.SERVICE_NAME }} \
+            --repository-format=docker \
+            --location=${{ env.REGION }} \
+            --quiet || true
 
       - name: Build and Push Container
         run: |-
-          docker build -t ${{ env.GCR_REGION }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} process_emails/
-          docker push ${{ env.GCR_REGION }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker build -t ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }} process_emails/
+          docker push ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
-          image: ${{ env.GCR_REGION }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          image: ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}/app:${{ github.sha }}
           env_vars: |
             USER_EMAIL=${{ secrets.USER_EMAIL }}
             LABEL_NAME=${{ secrets.LABEL_NAME }}
