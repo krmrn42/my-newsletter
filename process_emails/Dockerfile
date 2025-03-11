@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 # Allow statements and log messages to immediately appear in the logs
 ENV PYTHONUNBUFFERED True
@@ -6,6 +6,8 @@ ENV PYTHONUNBUFFERED True
 # Copy local code to the container image.
 WORKDIR /app
 COPY . ./
+
+RUN pip install --upgrade pip
 
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
