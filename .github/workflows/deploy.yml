@@ -48,9 +48,3 @@ jobs:
           region: ${{ env.REGION }}
           image: ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/my-newsletter/${{ env.SERVICE_NAME }}:${{ github.sha }}
           service-account: ${{ secrets.PROJECT_NUMBER }}-compute@developer.gserviceaccount.com
-          env_vars: |
-            USER_EMAIL=${{ secrets.USER_EMAIL }}
-            LABEL_NAME=${{ secrets.LABEL_NAME }}
-          secrets: |
-            GMAIL_CREDENTIALS=gmail_credentials:latest
-            GMAIL_TOKEN=gmail_token:latest 
