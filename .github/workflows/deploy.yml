@@ -7,6 +7,7 @@ on:
 
 env:
   REGION: us-west1  # Replace with your desired region
+  GCR_REGION: us.gcr.io  # GCR regional endpoint
   SERVICE_NAME: process-emails  # Replace with your desired service name
 
 jobs:
@@ -33,19 +34,19 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Authorize Docker push
-        run: gcloud auth configure-docker
+        run: gcloud auth configure-docker ${{ env.GCR_REGION }}
 
       - name: Build and Push Container
         run: |-
-          docker build -t gcr.io/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} process_emails/
-          docker push gcr.io/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker build -t ${{ env.GCR_REGION }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} process_emails/
+          docker push ${{ env.GCR_REGION }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
-          image: gcr.io/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          image: ${{ env.GCR_REGION }}/${{ secrets.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
           env_vars: |
             USER_EMAIL=${{ secrets.USER_EMAIL }}
             LABEL_NAME=${{ secrets.LABEL_NAME }}
