@@ -41,13 +41,6 @@ jobs:
           docker build -t ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/my-newsletter/${{ env.SERVICE_NAME }}:${{ github.sha }} process_emails/
           docker push ${{ env.REGISTRY }}/${{ secrets.PROJECT_ID }}/my-newsletter/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
-      - name: Delete existing Cloud Run service
-        continue-on-error: true
-        run: |
-          gcloud run services delete ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --quiet
-
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
